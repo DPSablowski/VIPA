@@ -49,7 +49,7 @@ GROUPS = [
 ]
 
 HELP = """Calculation routes
-  Equation: closed-form equation of the main document (overlap measure Omega50). Net finesse of the median
+  Equation: closed-form equation (overlap measure Omega50). Net finesse of the median
             plate; fractions of a second.
   Theory:   exact line (round-trip pupil, incoherent across the chord) for surfaces drawn from the three-band model.
             'Single realisation' shows one device; 'Ensemble' gives the median over N devices with P10-P90 spread,
@@ -57,7 +57,7 @@ HELP = """Calculation routes
   Random seed: start value of the random-number generator that draws the surfaces. The same seed gives the same
             surfaces, so runs are reproducible and can be compared with each other.
 Measures
-  Omega50 (overlap) is the measure of the document; FWHM is the measure of LightMachinery/Hu; F_eq is the
+  Omega50 (overlap) is the measure; FWHM is the measure of LightMachinery/Hu; F_eq is the
   equivalent width (energy measure, chapter 6).
 Best focus (tick box)
   The detector is moved behind the focal plane until the line is sharpest. Equation: wedge and mean random chirp

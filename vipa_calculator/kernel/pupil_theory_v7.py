@@ -33,8 +33,6 @@ the closed Fresnel/Faddeeva form of the clean line (fresnel_line).
 Library module, no main program. Units: wavelengths in nm, lengths L and beam width bl in mm, angles in deg,
 wedge alpha in arcsec, internal lengths in m.
 
-Used in the main document: sec. 4.2 (Das Werkzeug: wie die Theorie gerechnet wird); sec. 5.6 (Einzelrealisierung
-und Detektionsart an der Strahlverfolgung); appendix O.3 (Skripte). Pages: 38, 48, 442.
 """
 import sys, os
 import numpy as np

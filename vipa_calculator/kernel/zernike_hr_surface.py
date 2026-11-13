@@ -14,8 +14,6 @@ Inputs / outputs
 Run
     python3 zernike_hr_surface.py
 
-Used in the main document: chapter 5 (Strahlverfolgung und Prüfung der Theorie); appendix O.3 (Skripte). Pages: 39,
-443.
 """
 import numpy as np
 from scipy.special import factorial

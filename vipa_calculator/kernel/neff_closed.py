@@ -2,7 +2,6 @@
 
 Library module (no command-line use, no files). n_eff_closed(...) returns (n_eff, mu, D_psi(c)); the other functions
 are its building blocks. Lengths in m, wl in m.
-Used in the main document: appendix A.46 (R54: Die Streifenkohärenz in geschlossener Form). Pages: 219.
 
 Structure function of the height (isotropic power law f^-alpha, variance 1, lower limit 1/D_m, r << D_m):
     D_h(r) = C_a (r/D_m)^nu,  nu = alpha-2,  C_a = 2 (alpha-2) (2 pi)^(alpha-2) I(alpha),  I(alpha) = 2^(-2H-1) Gamma(1-H)/(H Gamma(1+H)), H = nu/2

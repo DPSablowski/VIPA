@@ -19,7 +19,6 @@ Functions
 Inputs/outputs
     library module (no files, no printout); imported by finesse_vipa.py and others.
 
-Used in the main document: appendix A.40 (R48: Die Austrittsfläche im Überlappungsmaß). Pages: 202.
 """
 import sys, os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import numpy as np
 from dof_perp import _geom

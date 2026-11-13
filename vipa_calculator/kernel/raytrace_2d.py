@@ -21,8 +21,6 @@ How to run
     python3 raytrace_2d.py   (demo: one random Zernike HR surface with sigma = lambda/10; prints run time and FWHM)
     Otherwise imported as a library.
 
-Used in the main document: chapter 5 (Strahlverfolgung und Prüfung der Theorie); appendix O.3 (Skripte). Pages: 39,
-443.
 """
 import numpy as np
 import time

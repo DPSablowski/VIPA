@@ -13,7 +13,7 @@ D_m is the diameter over which the RMS values are defined (default in the grid: 
 the RMS over the central disk D_m of each realization (the measurable quantity). The box is 2 D_m wide so that the
 modes near 1/D_m are resolved.
 
-Two conventions for the mid band (module switch MID_PROJECTED, or the argument project_figure of Flaeche):
+Two conventions for the mid band (module switch MID_PROJECTED, or the argument project_figure):
   False (grids up to 22-10-2026): the mid band is the stationary power-law field as such. Its low-frequency end then
         carries variance in the Zernike terms of degrees 0-4 (about 46 % for alpha_s = 3 on D_m), which a Zernike fit of
         a measured map books as figure; extracting the parameters from a map therefore needs the projection correction
@@ -28,9 +28,6 @@ Units: metres. Seeds from (seed, pidx, surface index): equal seeds give equal su
 Contents: class Flaeche (full box), noll_share and measured_to_stationary (conversion between the two conventions), psd_mid (normalized mid-band PSD for the spectral integrals of the characteristic
 quantities), class FlaecheStreifen (memory-saving variant for long plates). Library module, no main program.
 
-Used in the main document: sec. 3.6.3 (Wie eine Politur aussieht: das Dreiband-Modell); sec. 4.2 (Das Werkzeug: wie
-die Theorie gerechnet wird); appendix A.32 (R40: Geschlossene Kennzahlen aus RMS und Spektralexponent). Pages: 28,
-38, 185.
 """
 import numpy as np
 from zernike_hr_surface import zernike

@@ -17,9 +17,6 @@ Functions
 
 Inputs/outputs
     library module (no files, no printout); imported by other scripts (e.g. exit_surface.py, finesse_vipa.py).
-
-Used in the main document: appendix A.38 (R46: Der Streifenversatz als quadratische Form – Mittel, Freiheitsgrade
-und Median). Pages: 199.
 """
 import sys, os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import numpy as np
 import pupil_theory_v7 as PT, run_full_grid_v7 as G

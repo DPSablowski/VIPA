@@ -32,9 +32,6 @@ Derivation (calculation, checked against the spectral integrals):
 Run
     python3 kappa_geschlossen.py   (prints the kappas of the standard VIPA, alpha_s = 3)
 
-Used in the main document: sec. 8.2 (Die Kennzahlen aus dem Spektrum); appendix A.32 (R40: Geschlossene Kennzahlen
-aus RMS und Spektralexponent); appendix A.45 (R53: Der Streifenversatz in geschlossener Form mit zwei Konstanten).
-Pages: 70, 182, 215.
 """
 import numpy as np
 from scipy.special import hyp2f1
