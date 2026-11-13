@@ -5,7 +5,8 @@ overlap finesse F_om (Omega0 = 50/25/10 %), all as finesse 2 pi / width.
 
 Library module (no command-line use, no files). Main entry: measures(I) returns the tuple in the order of NAMES;
 measures_hm(I) only the half-maximum value; overlap_F(I) the overlap finesse values.
-
+Used in the main document: sec. 4.2 (Das Werkzeug: wie die Theorie gerechnet wird); appendix E.3 (Die
+Überlappungsfinesse im Vergleich mit der Hülle); appendix J.4 (Breitenmaße). Pages: 38, 306, 412.
 """
 import numpy as np
 import pupil_theory_v7 as PT, run_full_grid_v7 as G

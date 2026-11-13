@@ -1,5 +1,5 @@
-"""Shift of the hits caused by the beam deflection and the resulting phase
-error in the three-band model.
+"""Shift of the hits caused by the beam deflection (Eq. "trackshift" of the main document) and the resulting phase
+error in the three-band model (calculation R52).
 
 Physics
     Mid band: slope covariance C_s(k) = (2 pi)^2 sigma^2 sum dens fx^2 cos(2 pi fx k dx) (isotropic power law,
@@ -17,6 +17,8 @@ Functions
 Run
     python3 track_eps.py   (prints the slope factor and four example geometries)
 
+Used in the main document: appendix A.44 (R52: Versatz der Treffer und Phasenfehler im Dreiband-Modell). Pages:
+212.
 """
 import sys; pass; import numpy as np
 from flaeche_dreiband import FIG_TERMS, FMAX_DEFAULT

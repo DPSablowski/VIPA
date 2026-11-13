@@ -24,6 +24,8 @@ Functions
 Units: lengths in m (D_m, sigma values), L in mm, tilt in deg, wedge alpha in arcsec, wavelength in nm, beam width in mm.
 Library module (no command-line use); imported by other scripts.
 
+Used in the main document: appendix A.41 (R49: Die Apodisation der kohärenten Sehnensumme in geschlossener Form).
+Pages: 205.
 """
 import sys, os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import numpy as np
 from dof_perp import _geom

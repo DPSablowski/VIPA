@@ -49,7 +49,7 @@ GROUPS = [
 ]
 
 HELP = """Calculation routes
-  Equation: closed-form equation (overlap measure Omega50). Net finesse of the median
+  Equation: closed-form equation of the main document (overlap measure Omega50). Net finesse of the median
             plate; fractions of a second.
   Theory:   exact line (round-trip pupil, incoherent across the chord) for surfaces drawn from the three-band model.
             'Single realisation' shows one device; 'Ensemble' gives the median over N devices with P10-P90 spread,
@@ -57,7 +57,7 @@ HELP = """Calculation routes
   Random seed: start value of the random-number generator that draws the surfaces. The same seed gives the same
             surfaces, so runs are reproducible and can be compared with each other.
 Measures
-  Omega50 (overlap) is the measure; FWHM is the measure of LightMachinery/Hu; F_eq is the
+  Omega50 (overlap) is the measure of the document; FWHM is the measure of LightMachinery/Hu; F_eq is the
   equivalent width (energy measure, chapter 6).
 Best focus (tick box)
   The detector is moved behind the focal plane until the line is sharpest. Equation: wedge and mean random chirp
@@ -99,23 +99,25 @@ class Calculator(tk.Tk):
         pw = ttk.PanedWindow(self, orient="horizontal"); pw.pack(fill="both", expand=True)
         left = ttk.Frame(pw); right = ttk.Frame(pw); pw.add(left, weight=0); pw.add(right, weight=1)
 
-        cv = tk.Canvas(left, width=440, highlightthickness=0); sb = ttk.Scrollbar(left, orient="vertical", command=cv.yview)
-        inner = ttk.Frame(cv); inner.bind("<Configure>", lambda ev: cv.configure(scrollregion=cv.bbox("all")))
-        cv.create_window((0, 0), window=inner, anchor="nw"); cv.configure(yscrollcommand=sb.set)
-        cv.pack(side="left", fill="both", expand=True); sb.pack(side="right", fill="y")
-        cv.bind("<Enter>", lambda ev: cv.bind_all("<MouseWheel>", lambda e2: cv.yview_scroll(int(-e2.delta / 120), "units")))
-        cv.bind("<Leave>", lambda ev: cv.unbind_all("<MouseWheel>"))
+        # input tabs (no scrolling): device, surface, source/detector, run; buttons and status stay below
+        low = ttk.Frame(left); low.pack(side="bottom", fill="x")
+        nbl = ttk.Notebook(left); nbl.pack(side="top", fill="both", expand=True)
+        T = {}
+        for key, name in (("dev", "Device"), ("surf", "Surface"), ("src", "Source"), ("run", "Run")):
+            T[key] = ttk.Frame(nbl); nbl.add(T[key], text=name)
+        self.nbl = nbl
+        TAB_OF = {"Light and mirrors": "dev", "Plate": "dev", "Surface (thickness variation, RMS)": "surf", "Source, detector, temperature": "src"}
 
         std = CC.Params()
-        fm = ttk.LabelFrame(inner, text="Gap material"); fm.pack(fill="x", padx=6, pady=4)
+        fm = ttk.LabelFrame(T["dev"], text="Gap material"); fm.pack(side="top", fill="x", padx=6, pady=4)
         self.material = tk.StringVar(value="Air")
         ttk.Combobox(fm, textvariable=self.material, values=MAT.MATERIALS, state="readonly", width=26).grid(row=0, column=0, padx=4, pady=3)
         ttk.Button(fm, text="Set n', n_g", command=self._material).grid(row=0, column=1, padx=4)
-        fb = ttk.LabelFrame(inner, text="Surface band convention"); fb.pack(fill="x", padx=6, pady=4)
+        fbands = ttk.LabelFrame(T["surf"], text="Surface band convention"); fbands.pack(fill="x", padx=6, pady=4); fb = fbands
         self.bands = tk.StringVar(value="stationary")
         ttk.Radiobutton(fb, text="stationary (model field; grids, equation)", variable=self.bands, value="stationary").grid(row=0, column=0, sticky="w", padx=4)
         ttk.Radiobutton(fb, text="measured (Zernike fit = figure, residual = mid band)", variable=self.bands, value="measured").grid(row=1, column=0, sticky="w", padx=4)
-        fmp = ttk.LabelFrame(inner, text="Measured surface maps (plate maps)"); fmp.pack(fill="x", padx=6, pady=4)
+        fmp = ttk.LabelFrame(T["surf"], text="Measured surface maps (plate maps)"); fmp.pack(fill="x", padx=6, pady=4)
         self.maps = {"map_hr": tk.StringVar(value=""), "map_pr": tk.StringVar(value="")}
         for i, (k, lab) in enumerate([("map_hr", "HR"), ("map_pr", "PR")]):
             ttk.Label(fmp, text=lab).grid(row=i, column=0, sticky="w", padx=4)
@@ -125,7 +127,9 @@ class Calculator(tk.Tk):
             ttk.Button(fmp, text="X", width=2, command=lambda k=k: self.maps[k].set("")).grid(row=i, column=4, padx=1)
         ttk.Label(fmp, text="A map is added to the model surface; with maps only, one plate is computed.", foreground="#555", wraplength=400).grid(row=2, column=0, columnspan=5, sticky="w", padx=4)
         for title, flds in GROUPS:
-            lf = ttk.LabelFrame(inner, text=title); lf.pack(fill="x", padx=6, pady=4)
+            lf = ttk.LabelFrame(T[TAB_OF[title]], text=title)
+            if title.startswith("Surface"): lf.pack(fill="x", padx=6, pady=4, before=fbands)
+            else: lf.pack(fill="x", padx=6, pady=4)
             for i, (k, lab, unit, tip) in enumerate(flds):
                 ttk.Label(lf, text=lab).grid(row=i, column=0, sticky="w", padx=4)
                 v = tk.StringVar(value=_fmt(getattr(std, k))); self.vars[k] = v
@@ -133,7 +137,7 @@ class Calculator(tk.Tk):
                 en.bind("<Return>", lambda ev: self.run_equation())
                 ttk.Label(lf, text=unit, foreground="#555").grid(row=i, column=2, sticky="w")
                 if tip: _Tip(en, tip)
-        ft = ttk.LabelFrame(inner, text="Theory"); ft.pack(fill="x", padx=6, pady=4)
+        ft = ttk.LabelFrame(T["run"], text="Theory"); ft.pack(fill="x", padx=6, pady=4)
         self.mode = tk.StringVar(value="ensemble")
         ttk.Radiobutton(ft, text="Single realisation", variable=self.mode, value="single").grid(row=0, column=0, sticky="w")
         ttk.Radiobutton(ft, text="Ensemble (median)", variable=self.mode, value="ensemble").grid(row=0, column=1, sticky="w")
@@ -152,7 +156,7 @@ class Calculator(tk.Tk):
         for i, (lab, var) in enumerate([("Surfaces N (ensemble)", self.n_surf), ("Random seed", self.seed), ("Processes", self.nproc)]):
             ttk.Label(ft, text=lab).grid(row=1 + i, column=0, sticky="w")
             en = ttk.Entry(ft, textvariable=var, width=8); en.grid(row=1 + i, column=1, sticky="w"); _Tip(en, tips[i])
-        fs = ttk.LabelFrame(inner, text="Detector spectrum (Hu, Gaussian envelope)"); fs.pack(fill="x", padx=6, pady=4)
+        fs = ttk.LabelFrame(T["run"], text="Detector spectrum (Hu, Gaussian envelope)"); fs.pack(fill="x", padx=6, pady=4)
         self.dlam2 = tk.StringVar(value="0"); self.sp_th = tk.BooleanVar(value=True); self.sp_bf = tk.BooleanVar(value=False)
         ttk.Label(fs, text="Second wavelength: offset [pm]").grid(row=0, column=0, sticky="w")
         en = ttk.Entry(fs, textvariable=self.dlam2, width=8); en.grid(row=0, column=1, sticky="w"); _Tip(en, "0 = only one wavelength")
@@ -160,18 +164,18 @@ class Calculator(tk.Tk):
         ttk.Checkbutton(fs, text="Overlay theory lines (after a theory run)", variable=self.sp_th, command=self.show_spectrum).grid(row=1, column=0, columnspan=2, sticky="w")
         ttk.Checkbutton(fs, text="Theory lines in best focus (tilted detector)", variable=self.sp_bf, command=self.show_spectrum).grid(row=2, column=0, columnspan=2, sticky="w")
         ttk.Button(fs, text="Show spectrum", command=lambda: (self.show_spectrum(), self.nb.select(5))).grid(row=3, column=0, columnspan=2, sticky="ew", pady=2)
-        fl = ttk.LabelFrame(inner, text="Length series"); fl.pack(fill="x", padx=6, pady=4)
+        fl = ttk.LabelFrame(T["run"], text="Length series"); fl.pack(fill="x", padx=6, pady=4)
         self.L_from = tk.StringVar(value="5"); self.L_to = tk.StringVar(value="80"); self.L_n = tk.StringVar(value="12"); self.L_th = tk.StringVar(value="0")
         for i, (lab, var) in enumerate([("L from [mm]", self.L_from), ("L to [mm]", self.L_to), ("Points", self.L_n), ("Theory surfaces per point (0 = equation only)", self.L_th)]):
             ttk.Label(fl, text=lab).grid(row=i, column=0, sticky="w"); ttk.Entry(fl, textvariable=var, width=8).grid(row=i, column=1, sticky="w")
-        fb = ttk.Frame(inner); fb.pack(fill="x", padx=6, pady=6)
+        fb = ttk.Frame(low); fb.pack(fill="x", padx=6, pady=6)
         for i, (t, c) in enumerate([("Equation", self.run_equation), ("Theory", self.run_theory), ("Length series", self.run_series),
                                     ("Cancel", self.cancel), ("Save results (CSV)", self.save_csv), ("Save inputs", self.save_json),
                                     ("Load inputs", self.load_json), ("Help", lambda: messagebox.showinfo("Help", HELP))]):
             ttk.Button(fb, text=t, command=c).grid(row=i // 2, column=i % 2, sticky="ew", padx=2, pady=2)
         fb.columnconfigure(0, weight=1); fb.columnconfigure(1, weight=1)
-        self.status = tk.StringVar(value="ready"); self.pb = ttk.Progressbar(inner, mode="determinate")
-        self.pb.pack(fill="x", padx=6); ttk.Label(inner, textvariable=self.status, wraplength=420).pack(fill="x", padx=6, pady=2)
+        self.status = tk.StringVar(value="ready"); self.pb = ttk.Progressbar(low, mode="determinate")
+        self.pb.pack(fill="x", padx=6); ttk.Label(low, textvariable=self.status, wraplength=420).pack(fill="x", padx=6, pady=2)
 
         vp = ttk.PanedWindow(right, orient="vertical"); vp.pack(fill="both", expand=True)
         ft2 = ttk.Frame(vp); vp.add(ft2, weight=0)

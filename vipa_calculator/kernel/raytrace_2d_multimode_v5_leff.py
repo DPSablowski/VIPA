@@ -14,6 +14,9 @@ limit the sum.
 Inputs: surface maps on regular grids (HR, PR, back side), masks, beam width, detector positions; geometry constants
 (k0, theta, Delta_x, L_step, F, f_cyl, r2, R_mirror, pmax) come from the module raytrace_2d.
 
+Used by run_full_grid_v7.py, which reads this file as source text, removes the field-of-view envelope at the end of
+the function and compiles it as _raytrace_v5_noenv. Keep this file next to run_full_grid_v7.py. The ray tracing is
+used in the main document to validate the theory (ray-tracing grids, sec. on validation).
 """
 import numpy as np
 import raytrace_2d as rt2d

@@ -23,6 +23,16 @@ Functions
 
 Inputs/outputs
     library module (no files, no printout); imported by the evaluation scripts.
+
+Used in the main document: sec. 9.5 (Die Finesse eines inkohärent beleuchteten VIPA); sec. 9.10 (Durchgerechnet:
+das Standard-VIPA); sec. 9.12 (Rechenvorschrift); appendix A.38 (R46: Der Streifenversatz als quadratische Form –
+Mittel, Freiheitsgrade und Median); appendix A.40 (R48: Die Austrittsfläche im Überlappungsmaß); appendix A.41
+(R49: Die Apodisation der kohärenten Sehnensumme in geschlossener Form); appendix A.42 (R50: Eine Lorentz-Quelle in
+der Gleichung); appendix A.43 (R51: Beschichtung des VIPA – Rechnung und Schichtdickenschwankung); appendix A.46
+(R54: Die Streifenkohärenz in geschlossener Form); appendix A.53 (R61: Das Feinband als Lorentz-Faltung); appendix
+A.54 (R62: Rechteckfaltungen in der Voigt-Regel – Filterquelle, Querkeil und Pixel); appendix A.55 (R63: Die Figur
+in der Streifenkohärenz – reine Figur und randbegrenzte Platten). Pages: 92, 102, 103, 199, 202, 205, 207, 209,
+219, 244, 246, 249.
 """
 import numpy as np
 from kappa_geschlossen import kappas

@@ -20,6 +20,7 @@ Environment variable VIPA_MEAN_VAR_LEGACY=1 selects the legacy normalization of 
 _calibrate_mean_var); default is the exact one.
 Library module, no main program; it imports zernike_hr_surface from the current directory.
 
+Used in the main document: appendix H.7 (Produktionsraster, gemeinsame Zufallszahlen und Nachrechnung). Pages: 353.
 """
 import numpy as np, sys
 sys.path.insert(0,'.')

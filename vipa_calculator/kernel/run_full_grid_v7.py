@@ -80,6 +80,8 @@ Run time: about 9200 parameter combinations before the multiplication with the
 realisations; with a few seconds per call several hours on many cores. The script can be
 interrupted and resumed at any time (checkpointing).
 
+Used in the main document: chapter 5 (Strahlverfolgung und Prüfung der Theorie); appendix O.3 (Skripte). Pages: 39,
+442.
 """
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
