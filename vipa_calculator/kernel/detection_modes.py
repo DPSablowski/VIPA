@@ -17,8 +17,6 @@ Contents
   intensity     computes the line I(delta) from the per-strip pupils in one of the three modes.
 
 Inputs/outputs: library module, no files.
-
-Used in the main document: sec. 4.2 (Das Werkzeug: wie die Theorie gerechnet wird). Pages: 38.
 """
 import numpy as np
 from scipy.special import j1

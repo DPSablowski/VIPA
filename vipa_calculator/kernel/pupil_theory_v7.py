@@ -32,9 +32,6 @@ common residual resonance; F_semi_*, F_two_part*, chirp_apod_stats, F_semi_final
 the closed Fresnel/Faddeeva form of the clean line (fresnel_line).
 Library module, no main program. Units: wavelengths in nm, lengths L and beam width bl in mm, angles in deg,
 wedge alpha in arcsec, internal lengths in m.
-
-Used in the main document: sec. 4.2 (Das Werkzeug: wie die Theorie gerechnet wird); sec. 5.6 (Einzelrealisierung
-und Detektionsart an der Strahlverfolgung); appendix O.3 (Skripte). Pages: 38, 48, 442.
 """
 import sys, os
 import numpy as np
@@ -48,8 +45,8 @@ h = 2e-3                      # mirror spacing h [m]
 theta_div_override = None     # divergence half angle in the dispersion direction [rad]; None: from beam width and f_cyl (round beam)
 apertur = "rund"              # 'rund' (round): chord = bl*sqrt(1-(thx/theta_div)^2); 'rechteck' (rectangle): chord = bl for all orders
 WEDGE_PHASE = "exact"         # wedge phase of the pupil: "exact" = mirror-image phase k0 d_A [sin(Theta) - sin(Theta - 2 m alpha)]
-                              # (series in alpha: a m + beta m^2 - 4/3 k0 alpha^2 h cos(Theta) m^3 + ..., main document eq.
-                              # wedge_series); "hitpoint" = the first-order sum 2 k0 alpha cos(theta) x_j over the hit points used
+                              # (series in alpha: a m + beta m^2 - 4/3 k0 alpha^2 h cos(Theta) m^3 + ...);
+                              # "hitpoint" = the first-order sum 2 k0 alpha cos(theta) x_j over the hit points used
                               # up to 21-10-2026 (gives beta m(m+1) and a cubic term of the wrong sign, +4/3); for old runs only.
 
 

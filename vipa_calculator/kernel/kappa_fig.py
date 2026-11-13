@@ -17,9 +17,6 @@ Outputs
 
 Run
     Import only: from kappa_fig import kappa_fig.
-
-Used in the main document: sec. 8.2 (Die Kennzahlen aus dem Spektrum); appendix A.37 (R45: Der Figurterm als
-endliche Summe). Pages: 72, 197.
 """
 import sys; pass; import numpy as np
 import pupil_theory_v7 as PT, run_full_grid_v7 as G

@@ -1,4 +1,4 @@
-"""Finesse of an incoherently illuminated VIPA in the overlap measure (Omega50), closed-form chain of the main document.
+"""Finesse of an incoherently illuminated VIPA in the overlap measure (Omega50), closed-form chain.
 
 Purpose
     finesse(...) evaluates the closed-form equation for the finesse of a real VIPA: clean line (edge and decay),
@@ -17,34 +17,24 @@ Functions
                                  optional correction of the systematic deviation from tables of the grid runs
     gueltigkeit(...)             check of the range of validity
     finesse(...)                 the closed-form finesse (main function)
-    finesse_streifensumme(...)   semi-numerical variant: sum of independent simulated strips (R55 step 6, R58 step 5)
+    finesse_streifensumme(...)   semi-numerical variant: sum of independent simulated strips
     coating_sigma_eq(...), r2_effektiv(...)
-                                 coating: equivalent mirror height and effective reflectivity (R51)
+                                 coating: equivalent mirror height and effective reflectivity
 
 Inputs/outputs
     library module (no files, no printout); imported by the evaluation scripts.
-
-Used in the main document: sec. 9.5 (Die Finesse eines inkohärent beleuchteten VIPA); sec. 9.10 (Durchgerechnet:
-das Standard-VIPA); sec. 9.12 (Rechenvorschrift); appendix A.38 (R46: Der Streifenversatz als quadratische Form –
-Mittel, Freiheitsgrade und Median); appendix A.40 (R48: Die Austrittsfläche im Überlappungsmaß); appendix A.41
-(R49: Die Apodisation der kohärenten Sehnensumme in geschlossener Form); appendix A.42 (R50: Eine Lorentz-Quelle in
-der Gleichung); appendix A.43 (R51: Beschichtung des VIPA – Rechnung und Schichtdickenschwankung); appendix A.46
-(R54: Die Streifenkohärenz in geschlossener Form); appendix A.53 (R61: Das Feinband als Lorentz-Faltung); appendix
-A.54 (R62: Rechteckfaltungen in der Voigt-Regel – Filterquelle, Querkeil und Pixel); appendix A.55 (R63: Die Figur
-in der Streifenkohärenz – reine Figur und randbegrenzte Platten). Pages: 92, 102, 103, 199, 202, 205, 207, 209,
-219, 244, 246, 249.
 """
 import numpy as np
 from kappa_geschlossen import kappas
 # diameter of the fibre core image at the entrance [m] (shortens the usable plate length by D_CORE/2)
 D_CORE = 75e-6
 from scipy.special import betaincinv as _bii
-# chirp statistics over the plates (R56 step 10): the median of the finesse over the plates corresponds not to the
+# chirp statistics over the plates: the median of the finesse over the plates corresponds not to the
 # median of the chirp but approximately to its MEAN ABSOLUTE VALUE, because the median of a sum of right-skewed
 # contributions (D^2 = Dc^2 + g^2 sigma^2 + ...) moves towards the sum of the means (measured: median D^2 = 0.91 x sum
 # of the means). Gauss: E|x| = sqrt(2/pi) = 0.798; figure (sphere, d = 12): 0.815.
 from scipy.special import gammaln as _gln, erf
-# analytic line (Fresnel/Faddeeva), overlap width found with one root search (R59)
+# analytic line (Fresnel/Faddeeva), overlap width found with one root search
 from keil_analytisch import omega50 as _omega50_profil
 CHIRP_MID = float(np.sqrt(2/np.pi))
 # = 0.8147: mean |projection| of a unit vector in d = 12 Zernike dimensions, times sqrt(12)
@@ -55,34 +45,33 @@ CHIRP_MID_MEDIAN = 0.6745; FIG_CHIRP_MEDIAN = float(np.sqrt(_bii(0.5, (12 - 1)/2
 G_A2_FIGUR = 1.2
 # share of a single strip in the ensemble broadening (g^2(n)/g^2_inf = c1 + (1-c1)(1-1/n)^1.15); option figur_rest="c1"
 C1_STREIFEN = 0.23
-# narrow rectangle in the Voigt rule: Gaussian line of the same variance W^2/12 (R62)
+# narrow rectangle in the Voigt rule: Gaussian line of the same variance W^2/12
 C_G2_RECHTECK = 1.349**2/12
 # rectangular vs. Gaussian distribution of the strip offsets in the Voigt rule (derived: Omega width W/2 vs. 1.349 sigma)
 RECHTECK_GEWICHT = (np.sqrt(3)/1.349)**2
-# default kappas of the figure term (calculation R41), provisional; normally computed by kappa_fig
+# default kappas of the figure term, provisional; normally computed by kappa_fig
 KFIG = dict(par=0.13, q=0.005, perp=0.04)
 # median/mean of the strip offset (three-band grid); used for the exit surface
 M_PERP = 0.68
-# w(v) for keil="funktion": W_EXP = threshold of the wedge function, derived from the exact chirped Airy line (w(t) = 0.35-0.37 for t = 0.3-1, R57); 2.71/1.54/4.67 from the analytic line (R42)
+# w(v) for keil="funktion": W_EXP = threshold of the wedge function, derived from the exact chirped Airy line (w(t) = 0.35-0.37 for t = 0.3-1); 2.71/1.54/4.67 from the analytic line
 W_EXP, W_A, V_C, K_W = 0.360, 2.71, 1.54, 4.67
-# D0 = [(A/M)^p + (2 pi/F_R)^p]^(1/p): A = overlap width of the Dirichlet kernel (exact, R57), p fitted (the only constant of the clean line)
+# D0 = [(A/M)^p + (2 pi/F_R)^p]^(1/p): A = overlap width of the Dirichlet kernel (exact), p fitted (the only constant of the clean line)
 A_RAND, P_RAND = 3.004, 2.6
-# systematic deviation e = F_eq/F_theory - 1 per range (main document, appendix C.1, paragraph "Gültigkeit und systematische
-# Abweichungen je Bereich"; run with one surface per point,
+# systematic deviation e = F_eq/F_theory - 1 per range (run with one surface per point,
 # 1200 points x 100 surfaces), used by korrektur(): key = source width 0 or 6 pm; rows R2 < 0.95 / >= 0.95;
 # columns phi_h <= 0.7 / 0.7-1 / 1-1.5 / > 1.5 (with the factor g_phi, computed up to 2 rad). Only the last column needs a correction.
 E_TAB = {0: [[0.00, +0.02, 0.00, +0.11], [-0.02, 0.00, -0.04, +0.09]],
          6: [[0.00, +0.02, +0.02, +0.17], [-0.02, -0.01, -0.01, +0.05]]}
 
 def phi_h(wl, sigma_fig=0.0, sigma_mid=0.0, sigma_fein=0.0):
-    """Return the phase per reflection 2 k0 sigma_h (Eq. phi_h of the main document) in rad.
+    """Return the phase per reflection 2 k0 sigma_h in rad.
 
     The equation holds without correction up to 1.5 rad (with the factor g_phi).
     """
     return 4*np.pi/wl*np.sqrt(sigma_fig**2 + sigma_mid**2 + sigma_fein**2)
 
 # systematic deviation versus round-trip step dx = 2 h tan(theta) (rows R2 < 0.95 / >= 0.95; columns dx < 0.3 / 0.3-0.6 /
-# 0.6-1.2 / > 1.2 mm), from the h grid (600 points x 200 surfaces, h = 0.5-12 mm), range of validity (calculation R55);
+# 0.6-1.2 / > 1.2 mm), from the h grid (600 points x 200 surfaces, h = 0.5-12 mm), range of validity;
 # key = source width 0, 2 or 6 pm
 E_DX = {0: [[0.00, -0.045, -0.036, -0.063], [0.00, -0.080, -0.130, -0.187]],
         2: [[0.00, -0.028, -0.006, -0.023], [0.00, -0.045, -0.065, -0.102]],
@@ -110,7 +99,7 @@ def korrektur(F, R2, phi, dlam_Q_pm=0.0):
     return F/(1+e), e
 
 def gueltigkeit(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, phi=0.0, var_q=0.0, sigma_mid=None, sigma_fig=0.0, alpha_s=3.0, D_m=None):
-    """Check of the range of validity (R58): phi_mf <= 1.5 (mid + fine band), phi_fig <= 1.5, t~ <= 30,
+    """Check of the range of validity: phi_mf <= 1.5 (mid + fine band), phi_fig <= 1.5, t~ <= 30,
     and with a wedge v >= 2 or N_F <= 4.
 
     Returns a dict with v, t, N_F and the flags phi_ok, chirp_ok, plateau, grosschirp (large chirp), and, if sigma_mid is
@@ -129,7 +118,7 @@ def gueltigkeit(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, phi=0.0, var_q=0.0
     if sigma_mid is not None:
         k0_ = 2*np.pi/wl; out["phi_mf"] = 2*k0_*np.sqrt(sigma_mid**2 + (0.0)**2); out["phi_fig"] = 2*k0_*sigma_fig; out["phi_ok"] = out["phi_mf"] <= 1.5; out["fig_ok"] = out["phi_fig"] <= 1.5
     if sigma_mid is not None:
-        # note (R52): shift of the hits by the deflection at the surface slope (Eq. trackshift) and the resulting phase error eps [rad];
+        # note: shift of the hits by the deflection at the surface slope (Eq. trackshift) and the resulting phase error eps [rad];
         # eps <= 0.8: deviation phase screen / ray tracing < 2 % in the median (P90 4 %); above that only an estimate
         from track_eps import eps_track
         # default mirror diameter: just covers the plate length and a 5.5 mm wide beam
@@ -164,7 +153,7 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
 
     f_max [1/m]: upper limit of the mid band (default 1/0.1 mm; above it the roughness counts as fine band sigma_fein). It
     enters the normalisation of the spectrum (noticeable only for alpha_s near 2) and the alias term of the strip offset
-    (R60 step 8); for thick plates (h >= 8 mm) with alpha_s <= 2.5 a factor 2 in f_max changes the alias term by about a third.
+   ; for thick plates (h >= 8 mm) with alpha_s <= 2.5 a factor 2 in f_max changes the alias term by about a third.
     kernbild: diameter of the core image [m] (default 75 um). dlam_R: full width of a rectangular source spectrum [m] (filter;
     the overlap width of a rectangle is half its width). sigma_H, sigma_P: tuples (sigma_fig, sigma_mid, sigma_fein) [m] of the
     two gap surfaces (HR and PR); they override sigma_fig/mid/fein: mid and fine band independent (variances add), figure with
@@ -172,7 +161,7 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
     keil: "analytisch" (default): D0 and D_c are the overlap widths of the analytic line of the exponential window with
     quadratic phase (Fresnel integral via the Faddeeva function, periodically folded; one root search, no constant; also valid
     on the Fresnel plateau and for a large chirp to about 6 %); "funktion": the closed wedge function with
-    D0 = [(3.004/M)^2.6 + (2 pi/F_R)^2.6]^(1/2.6), w(v) and D_inf (R42, R57), only for t~ <= 30 and outside the plateau.
+    D0 = [(3.004/M)^2.6 + (2 pi/F_R)^2.6]^(1/2.6), w(v) and D_inf, only for t~ <= 30 and outside the plateau.
     det_mtf_rad: Gaussian width (FWHM, far-field angle) of the detector transfer function (MTF); enters the Gaussian term like the pixel.
     dT_dx, dT_dy [K/m]: temperature gradient over the plate along / across the dispersion; with cte (of the spacer or the plate,
     1/K), dn_dT [1/K] and n_gap it gives a wedge alpha_T = h (n_gap cte + dn_dT) dT/dx (added to alpha) or a transverse wedge.
@@ -189,7 +178,7 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
     if dT_dx != 0.0 or dT_dy != 0.0:
         k_T = h*(n_gap*cte + dn_dT)
         alpha_as = alpha_as + np.rad2deg(k_T*dT_dx)*3600; alpha_y_as = alpha_y_as + np.rad2deg(k_T*dT_dy)*3600
-    # temperature fluctuation between exposures (temperature chapter), general in h
+    # temperature fluctuation between exposures, general in h
     if sigma_T > 0:
         ddel_dT = 2*(2*np.pi/wl)*h*np.cos(th_)*(n_gap*cte + dn_dT); f_G_T = np.sqrt(f_G_T**2 + (2.3548*abs(ddel_dT)*sigma_T)**2)
     # HR and PR surfaces given separately
@@ -197,7 +186,7 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
         sH = sigma_H if sigma_H is not None else (0.0, 0.0, 0.0); sP = sigma_P if sigma_P is not None else (0.0, 0.0, 0.0)
         sigma_fig = float(np.sqrt(max(sH[0]**2 + sP[0]**2 + 2*rho_fig*sH[0]*sP[0], 0.0)))
         sigma_mid = float(np.sqrt(sH[1]**2 + sP[1]**2)); sigma_fein = float(np.sqrt(sH[2]**2 + sP[2]**2))
-    # feinband: "quadratur" (fine band counted in residual resonance, strip offset and n_eff) or "lorentz" (default, R61): the fine
+    # feinband: "quadratur" (fine band counted in residual resonance, strip offset and n_eff) or "lorentz" (default): the fine
     # band is uncorrelated from reflection to reflection, the accumulated phase is a random walk; its coherence e^{-s^2 |m-m'|/2}
     # convolves the whole line with a Lorentz line of width s^2 = (2 k0 sigma_fein)^2 -- like a Lorentz source, D -> D + s^2; no constant
     sigma_fein_L = 0.0
@@ -230,13 +219,13 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
     sig2_fig = c2*KF["par"]*sigma_fig**2; sig2_mid = sig2 - sig2_fig
     varq = c2*(K["kappa_q"]*sigma_mid**2 + KF["q"]*sigma_fig**2)
     # perp_form (passed to kappas): "doppelfilter" (default: window length of equal area L_perp = pi N_Sigma dx, alias term with the
-    # hole of the chord, chord filter 1 - 1/(1 + z^2/3 + z^4/15) with ln Z interpolation; R60 steps 8-10), "doppelfilter_phi" (with
+    # hole of the chord, chord filter 1 - 1/(1 + z^2/3 + z^4/15) with ln Z interpolation), "doppelfilter_phi" (with
     # the factor Phi(alpha_s)), "doppelfilter_ohne_alias", "doppelfilter_0710" (length L_w, alias without chord),
     # "doppelfilter_0710_ohne_alias" or "fit2" (form with l_perp, two constants)
     exit_on = (sigma_E_fig > 0 or sigma_E_mid > 0 or sigma_E_fein > 0)
     EX = None
     if exit_on:
-        # exit surface (R48): residual -> pedestal or Kubo line, curvature -> chirp, linear part per strip -> strip offset
+        # exit surface: residual -> pedestal or Kubo line, curvature -> chirp, linear part per strip -> strip offset
         from exit_surface import exit_kz, sockel_faktor_voigt
         with _plattenabstand(h): EX = exit_kz(R2, L_eff*1e3, theta_i_deg, alpha_as, wl*1e9, blende*1e3, D_m, n_PR, sigma_E_fig, sigma_E_mid, alpha_s_E, sigma_E_fein)
     if perp_exact and (sigma_mid > 0 or sigma_fig > 0 or sigma_fein > 0 or exit_on):
@@ -249,12 +238,12 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
     else:
         # closed main form: fitted/closed kappa_perp; perp_exact=True instead: semi-numerical (covariance, eigenvalues).
         # Median per band: ln 2 for the mid band (two modes across the chord: tilt and curvature, median of chi^2_2/2), 1/2 for the
-        # figure (one dominant mode), 1 for the fine band (many independent strips) (R53).
+        # figure (one dominant mode), 1 for the fine band (many independent strips).
         # Figure: tilt across the chord -> strip lines uniformly distributed (rectangle, Omega width W/2 = 1.732 sigma instead of
-        # 1.349 sigma for a Gaussian); in the Voigt rule as a Gaussian equivalent with the weight (1.732/1.349)^2 (R53 step 8)
+        # 1.349 sigma for a Gaussian); in the Voigt rule as a Gaussian equivalent with the weight (1.732/1.349)^2
         # figure: variance with median factor 1/2
         sperp2_mid = c2*(np.log(2)*K["kappa_perp"]*sigma_mid**2 + 1.0*kpf*sigma_fein**2); sperp2_figG = c2*0.5*KF["perp"]*sigma_fig**2
-        # fig_perp = "regel": the rectangle of the figure goes through the rectangle rule (R62) like filter source, transverse wedge
+        # fig_perp = "regel": the rectangle of the figure goes through the rectangle rule like filter source, transverse wedge
         # and pixel: narrow compared with the line as a Gaussian of equal variance (weight 1.349^2), wide as a rectangle (weight 3).
         # W_fig = sqrt(12 Var) = full width of the rectangle.
         # fig_perp = "fenster": the weight follows the window shape. Per plate the strip offset of the figure counts as a rectangle
@@ -272,7 +261,7 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
             wr_ = EX["wy"]/EX["wy"].sum(); Cx = EX["C"]; sperp2 += M_PERP*float(np.sum(wr_*np.diag(Cx)) - wr_ @ Cx @ wr_)
     aA = 0.0
     if kohaerent and (sigma_mid > 0 or sigma_fig > 0 or sigma_fein > 0):
-        # coherent chord sum (laser, point detector): apodisation from the structure function of the strip phases (R49),
+        # coherent chord sum (laser, point detector): apodisation from the structure function of the strip phases,
         # saturated gamma_A = gamma + k gamma tanh(a_A/(k gamma)); no strip offset
         from apod import a_A_rms
         with _plattenabstand(h): aA, _ = a_A_rms(R2, L_eff*1e3, theta_i_deg, alpha_as, wl*1e9, blende*1e3, D_m, sigma_fig, sigma_mid, alpha_s, sigma_fein, nf=40, nphi=24)
@@ -281,9 +270,9 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
     D0 = _omega50_profil(gam, M, 0.0) if keil == "analytisch" else ((A_RAND/M)**P_RAND + (2*np.pi/FR)**P_RAND)**(1/P_RAND)
     sq = 0.5*np.sqrt(varq); sE2 = EX["var_chirp"] if EX is not None else 0.0
     # median of the chirp: mid and fine band Gaussian (0.6745); figure with fixed rms per surface -> projection of a unit vector in
-    # d = 12 Zernike dimensions, median |x| sqrt(d) from the beta distribution = 0.713 (R56, derived)
+    # d = 12 Zernike dimensions, median |x| sqrt(d) from the beta distribution = 0.713 (derived)
     vq_fig = c2*KF["q"]*sigma_fig**2; vq_rest = max(varq - vq_fig, 0.0)
-    # effective chirp = mean absolute value of beta + q/2 over the plates (folded normal distribution, R24; R56 step 13): s = standard
+    # effective chirp = mean absolute value of beta + q/2 over the plates (folded normal distribution): s = standard
     # deviation of q/2, figure weighted with (0.815/0.798)^2 (sphere instead of Gauss); E|beta + X| = s sqrt(2/pi) exp(-beta^2/2s^2)
     # + beta erf(beta/(sqrt2 s)); for beta = 0: 0.798 s
     s_q2 = 0.25*(vq_rest + (MEDIAN_FIG_CHIRP/CHIRP_MID)**2*vq_fig) + sE2; s_eff = np.sqrt(s_q2)
@@ -296,40 +285,40 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
     phi = 4*np.pi/wl*np.sqrt(sigma_fig**2 + sigma_mid**2 + sigma_fein**2)
     n_eff = np.nan
     if koeffizient == "neff_geschlossen" and (sigma_mid > 0 or sigma_fein > 0 or sigma_fig > 0) and not kohaerent:
-        # closed strip coherence (R54): structure function of the power law (alpha_s = 2 logarithmic), line mean over k* = 2/D0
+        # closed strip coherence: structure function of the power law (alpha_s = 2 logarithmic), line mean over k* = 2/D0
         # round trips (2F1 or elementary), chord mean via the incomplete gamma function with the exponent at the coherence length;
         # the figure via its strip offset (D_fig_c)
         from neff_closed import n_eff_closed
         kstar = max(2, int(round(2/D0)))
-        # figur_rest = "kohaerenz" (default, R63): the figure decouples the strips with its own strip offset (tilt across the
+        # figur_rest = "kohaerenz" (default): the figure decouples the strips with its own strip offset (tilt across the
         # dispersion); its structure function 12 k*^2 sigma_perp,fig^2 (u/c)^2 adds to that of the mid band. No new number.
         # kstar_fig: number of round trips over which the strip offset of the figure counts; "D0" (default), "Dc" (chirped line),
         # "geo" (geometric mean)
         ks_f = {"D0": kstar, "Dc": 2/Dc, "geo": 2/np.sqrt(D0*Dc)}.get(kstar_fig, kstar)
         D_fig_c = 12*ks_f**2*c2*KF["perp"]*sigma_fig**2 if (figur_rest == "kohaerenz" and sigma_fig > 0) else 0.0
-        # option "kohaerenz_rest" (second counting, R63 step 6): not the shift but the difference of the residuals decouples,
+        # option "kohaerenz_rest" (second counting): not the shift but the difference of the residuals decouples,
         # D_psi,fig(u) = k*^2 sigma_res,fig^2 (u/ell)^2 with ell = ell_fig_rel D_m (structure function of the residual of the Zernike
         # figure: 0.13 to 0.23 D_m).
         if figur_rest == "kohaerenz_rest" and sigma_fig > 0: D_fig_c = kstar**2*sig2_fig*(blende/(ell_fig_rel*D_m))**2
         n_eff, _, _ = n_eff_closed(kstar, dx, D_m, alpha_s, sigma_mid, sigma_fein, blende, wl, f_max=f_max, D_fig_c=D_fig_c)
-        # sum line (R54 step 5, main form): one strip stays concentrated (g^2 = 0), many independent strips give the ensemble line
+        # sum line (main form): one strip stays concentrated (g^2 = 0), many independent strips give the ensemble line
         # with c_inf = 1 + phi_mf^2 (second order of the coherence mu = e^{-phi^2}); in between the fraction 1 - 1/n_eff. No constant.
         phi_mf_ = 4*np.pi/wl*np.sqrt(sigma_mid**2 + sigma_fein**2)
         g2 = (1 + phi_mf_**2)*(1 - 1/max(n_eff, 1.0)); g_phi = np.sqrt(max(g2, 0.0))
     elif koeffizient == "neff" and (sigma_mid > 0 or sigma_fig > 0 or sigma_fein > 0) and not kohaerent:
-        # semi-numerical form of the coefficient (R58 step 6): g^2 = 0.36 (1 + ln n_eff), n_eff = 1/A_rms^2(2/D0) from the strip
+        # semi-numerical form of the coefficient: g^2 = 0.36 (1 + ln n_eff), n_eff = 1/A_rms^2(2/D0) from the strip
         # coherence (apod.py, numerical); one constant (0.36 = coefficient of the single strip)
         from strip_sum_mc import n_eff_of
         with _plattenabstand(h): n_eff, _ = n_eff_of(R2, L_eff*1e3, theta_i_deg, alpha_as, wl*1e9, blende*1e3, D_m, sigma_fig, sigma_mid, alpha_s, sigma_fein, D0)
         g2 = 0.36*(1 + np.log(max(n_eff, 1.0))); g_phi = np.sqrt(g2)
     else:
-        # higher-order factor (R58 steps 3 and 7): the variable is the phase per reflection of mid and fine band phi_mf (short
+        # higher-order factor: the variable is the phase per reflection of mid and fine band phi_mf (short
         # structures decorrelate the strips); the figure contributes little (with phi_h instead of phi_mf up to -68 % for a large figure)
         phi_mf = 4*np.pi/wl*np.sqrt(sigma_mid**2 + sigma_fein**2); phi_fig_ = 4*np.pi/wl*sigma_fig
         # (the figure would contribute like the mid band up to about 1.5 rad and then saturate: phi_fig,eff = 1.5 tanh(phi_fig/1.5); not used here)
-        # figure not in the phase factor: its effect is the rectangular distribution of the strip offset (R53 step 8)
+        # figure not in the phase factor: its effect is the rectangular distribution of the strip offset
         g_phi = np.exp(phi_mf**2/4)
-    # figur_rest (R63): counting of the strips for the residual resonance.
+    # figur_rest: counting of the strips for the residual resonance.
     #   "kohaerenz"      default: the figure decouples the strips with its own strip offset; its structure function
     #                    12 k*^2 sigma_perp,fig^2 (u/c)^2 adds to that of the mid band in n_eff (see n_eff_closed above); for the
     #                    figure alone 1/n = sqrt(pi/a) erf(sqrt a) - (1 - e^-a)/a, a = 6 k*^2 sigma_perp,fig^2. No new number.
@@ -351,11 +340,11 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
     fG = np.sqrt((2*np.pi*dlam_Q/FSR)**2 + f_G_T**2)
     # rectangular spectrum: overlap width fR/2 in the Gaussian term (instead of 0.573 f_G)
     fR = 2*np.pi*dlam_R/FSR
-    # Lorentz source (laser line, dlam_L = full width at half maximum in wavelength) and fine band as Lorentz: Lorentz widths add, D -> D + f_L (R50)
+    # Lorentz source (laser line, dlam_L = full width at half maximum in wavelength) and fine band as Lorentz: Lorentz widths add, D -> D + f_L
     fL = 2*np.pi*dlam_L/FSR + (2*k0*sigma_fein_L)**2; D_vor = D; D = D + fL
     # detector MTF as a Gaussian in the far field: Gaussian width (FWHM, angle) -> Gaussian term, in phase 2 pi det_mtf_rad Delta x / lambda
     if det_mtf_rad > 0: fG = np.sqrt(fG**2 + (2*np.pi*det_mtf_rad*dx/wl)**2)
-    # rectangular convolutions of the line (R62): filter source f_R, figure rectangle W_fig, transverse wedge W_q = 2 k0 alpha_y c
+    # rectangular convolutions of the line: filter source f_R, figure rectangle W_fig, transverse wedge W_q = 2 k0 alpha_y c
     # (incoherent only) and pixel W_p = 2 pi pixel_rad Delta x / lambda (pixel_rad = angle of one pixel in the far field =
     # pixel / camera focal length; one order = lambda/Delta x).
     Ws = []
@@ -363,7 +352,7 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
     if alpha_y_as != 0.0 and not kohaerent: Ws.append(abs(2*k0*np.deg2rad(alpha_y_as/3600)*blende))
     if pixel_rad > 0: Ws.append(2*np.pi*pixel_rad*dx/wl)
     p_sockel = 0.0; kubo = EX is not None and exit_modell == "kubo"
-    # R48 step 9: residual of the exit phase as a Kubo line instead of a pedestal; additive broadening of the line
+    # residual of the exit phase as a Kubo line instead of a pedestal; additive broadening of the line
     if kubo:
         from exit_surface import kubo_rest_width
         D_rest, D_0w = kubo_rest_width(EX["Cm"], EX["w"]); D_add = max(D_rest - D_0w, 0.0)
@@ -405,7 +394,7 @@ def finesse(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, f_cyl=7
 
 def finesse_streifensumme(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3.5e-3, sigma_fig=0.0, sigma_mid=0.0, alpha_s=3.0, D_m=None,
                           sigma_fein=0.0, dlam_Q=0.0, n_real=24, seed=2, details=False):
-    """Semi-numerical finesse (calculation R55 step 6, R58 step 5): the line of the chord as the sum of n_eff independent strips.
+    """Semi-numerical finesse: the line of the chord as the sum of n_eff independent strips.
 
     Each strip is simulated in 1D from the residual spectrum of the geometry (decay, edge, wedge and random chirp of the plate);
     n_eff = 1/A_rms^2(2/D0) from the coherence of the strips (apod.py), strip offset as a Gaussian convolution (median by
@@ -435,7 +424,7 @@ def finesse_streifensumme(R2, L_eff, theta_i_deg, alpha_as, wl, h=2e-3, blende=3
     return (F, dict(n_eff=ne, D0=D0, sperp2=sperp2, var_q=varq, M=M)) if details else F
 
 
-# ---- coating (calculation R51) ----
+# ---- coating ----
 # h_eq = S lambda eps: Ta2O5/SiO2 (n 2.10/1.46); HR 0.41, PR (top layer tuned to R2) 0.42-0.48; transfer matrix, coating_tmm.py
 S_PHASE_BESCHICHTUNG = 0.45
 
@@ -450,7 +439,7 @@ def coating_sigma_eq(eps_rms, wl, s_phase=S_PHASE_BESCHICHTUNG):
 def r2_effektiv(R2_eintritt, R2_ende, L_eff, h, theta_i_deg, n=2.0):
     """Return the effective reflectivity for an R2 that changes linearly over the plate (thickness gradient of the partial mirror).
 
-    Mean over the first n/gamma round trips from the entrance (rule from calculation R51; +-3 % in F for |dR2| <= 0.01 over
+    Mean over the first n/gamma round trips from the entrance (+-3 % in F for |dR2| <= 0.01 over
     the plate); solved by a short fixed-point iteration.
     """
     dx = 2*h*np.tan(np.deg2rad(theta_i_deg)); R2e = R2_eintritt

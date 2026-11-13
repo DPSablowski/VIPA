@@ -1,4 +1,4 @@
-"""Strip sum with n_eff independent strips (calculation R55 step 6 of the main document).
+"""Strip sum with n_eff independent strips.
 
 Idea
     The incoherent sum over the chord lies between the line of a single strip (concentrated) and the ensemble
@@ -14,9 +14,6 @@ Contents (library module, no main program)
 
 Inputs
     A RestSpektrum object (res_eff.py) with the residual spectra of the bands; messung.py (overlap_F) and apod.py.
-
-Used in the main document: appendix A.47 (R55: Der Gang mit dem Umlaufversatz – vom Befund zur Streifensumme).
-Pages: 221.
 """
 import sys, os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import numpy as np
 import messung as MS

@@ -2,7 +2,7 @@
 
 The calculator computes the finesse of a VIPA from one set of inputs in two ways:
 
-- **Equation**: the closed-form equation of the main document (overlap measure Ω₅₀). It returns the net finesse of the median plate in a fraction of a second.
+- **Equation**: the closed-form equation (overlap measure Ω₅₀). It returns the net finesse of the median plate in a fraction of a second.
 - **Theory**: the exact line (round-trip pupil, incoherent across the chord) for surfaces drawn from the three-band surface model. Two modes:
   - **Single realisation**: one device.
   - **Ensemble**: N devices. The calculator then reports the median, P10–P90 and mean, shows a histogram (tab *Distribution*, opened automatically) and plots the ensemble-average line together with five example surfaces (tab *Line*). The theory gives Ω₅₀, FWHM and F_eq.
@@ -10,9 +10,9 @@ The calculator computes the finesse of a VIPA from one set of inputs in two ways
 Two options apply to both routes:
 
 - **Best focus** (tick box): the detector is moved behind the focal plane until the line is sharpest.
-  - Equation: the best-focus equation of the main document (wedge and mean random chirp compensated).
+  - Equation: the best-focus equation (wedge and mean random chirp compensated).
   - Theory: for every device the defocus that maximises Ω₅₀ is searched.
-  - With the camera focal length f, the detector shift is dz = −2f²c/(k₀v²), where c is the defocus phase per round trip squared and v = Δx'·cosΘ is the transverse spacing of the virtual sources (air: v = 2h·sinΘ). For a 0.5″ wedge this reproduces the pocket of the main document: 0.7 mm at f = 200 mm, 0.1 mm at 75 mm.
+  - With the camera focal length f, the detector shift is dz = −2f²c/(k₀v²), where c is the defocus phase per round trip squared and v = Δx'·cosΘ is the transverse spacing of the virtual sources (air: v = 2h·sinΘ). For a 0.5″ wedge the shift is 0.7 mm at f = 200 mm, 0.1 mm at 75 mm.
   - The equation also gives the spread of dz over the plates. Tab *Focus* shows dz per device (ensemble) or the focus scan (single realisation).
 - **All orders** (tick box): every order inside the divergence cone of the cylinder lens is computed, each with its own field angle, chord (round beam) and round-trip offset.
   - The theory uses the same plates in every order.
@@ -66,7 +66,7 @@ the convention of the theory grids and of the closed-form equation. *Measured*: 
 Zernike fit of degrees 2–4 of a height map, mid band = RMS of the residual less the fine band, i.e. what an
 interferometer delivers. In the measured convention the theory draws surfaces with the mid band orthogonal to the
 figure terms (projected generator), and the equation converts the inputs with Noll's shares
-(`flaeche_dreiband.measured_to_stationary`; Part I, Sec. 3B). The two conventions differ: at the same nominal mid-band
+(`flaeche_dreiband.measured_to_stationary`). The two conventions differ: at the same nominal mid-band
 RMS the measured convention gives 8–24 % lower finesse, so measured values must not be entered as stationary ones.
 
 **Input mirror R1 < 1.** The calculation uses R1·R2 per round trip.
@@ -87,7 +87,7 @@ Not included:
 
 ## Accuracy
 
-**Equation.** As in the main document (sections 8.3 and 11.3): 2.7 % mean absolute deviation on the full grid. The calculator lists the notes that apply below the result. Two cases to watch:
+**Equation.** 2.7 % mean absolute deviation on the full grid. The calculator lists the notes that apply below the result. Two cases to watch:
 - predicted finesse below 5: about 15 %;
 - edge-limited lines with broadening: up to about 4 % pessimistic.
 
@@ -111,7 +111,7 @@ The equation route ignores maps. In scripts: `surface_map.read_int`, `prepare`, 
 - `calculator_core.py`: computational core, also usable without the GUI
 - `materials.py`: Sellmeier data
 - `test_calculator.py`: self-test
-- `kernel/`: modules of the theory and the equation, identical to `scripts/kernel/` of the document package (English comments; each module docstring says where it is used in the main document)
+- `kernel/`: modules of the theory and the equation (English comments; each module docstring describes what it does)
 
 The core can also be used without the GUI:
 

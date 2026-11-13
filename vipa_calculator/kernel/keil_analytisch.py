@@ -8,8 +8,6 @@ D_c(gamma, M, beta) of the chirped window without any fitted constant.
 Library module (no command-line use, no files): profil(delta, gam, M, beta) returns the line, omega50(gam, M, beta)
 the overlap half width s in rad (finesse = 2 pi / s).
 Inputs: gam = damping per round trip, M = number of round trips (window length), beta = chirp in rad per round trip^2.
-Used in the main document: appendix A.49 (R57: Herleitungen der angepassten Konstanten); appendix A.51 (R59: Die
-analytische Linie des gechirpten Fensters). Pages: 229, 236.
 """
 import numpy as np
 from scipy.special import erf, wofz

@@ -41,7 +41,7 @@ def main():
                    ", ".join(f"L={L}: {st[L]:.1f} ({lm[L]})" for L in lm))
     pw = CC.Params(wedge_as=0.5, f_cam_mm=200)
     dz200, dz75 = CC.equation(pw)["dz_best_mm"], CC.equation(pw.copy(f_cam_mm=75))["dz_best_mm"]
-    allok &= check("best-focus shift vs main document (0.5 arcsec: 0.7 mm at f = 200 mm, 0.1 mm at 75 mm)",
+    allok &= check("best-focus shift (0.5 arcsec: 0.7 mm at f = 200 mm, 0.1 mm at 75 mm)",
                    abs(dz200 - 0.70) < 0.01 and abs(dz75 - 0.10) < 0.005, f"{dz200:.3f} mm, {dz75:.3f} mm")
     tc = CC.theory(pw, n=0, best_focus=True)["orders"][0]
     allok &= check("theory best focus of the clean line: same shift, finesse back to the unwedged value",

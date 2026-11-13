@@ -7,8 +7,7 @@ Runs the 2D multimode ray tracing of a real VIPA on the grid
     R2 x L_eff x theta_i x alpha x sigma_w x lambda x F# (aperture)
 and stores, for every grid point and every random surface realisation, the finesse of
 up to N_ORDERS_MAX diffraction orders measured with six width methods. These results are
-the reference ("ray tracing") against which the theory and the closed equation of the main
-document are validated.
+the reference ("ray tracing") against which the theory and the closed equation are validated.
 
 Physics of the run
 ------------------
@@ -79,9 +78,6 @@ Afterwards the results are aggregated with aggregate_full_grid_v7.py.
 Run time: about 9200 parameter combinations before the multiplication with the
 realisations; with a few seconds per call several hours on many cores. The script can be
 interrupted and resumed at any time (checkpointing).
-
-Used in the main document: chapter 5 (Strahlverfolgung und Prüfung der Theorie); appendix O.3 (Skripte). Pages: 39,
-442.
 """
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -297,7 +293,7 @@ def estimate_window_and_resolution(R2, spacing_m):
 # not part of the actual ray sum. Applied as a hard window it cuts orders near its border
 # and makes their width measurement useless; without it a complete, valid peak is present
 # there. In addition, with stronger wedge error the interference pattern fragments
-# (main document) into several side maxima of similar height; a simple peak search then
+# into several side maxima of similar height; a simple peak search then
 # picks one of them almost at random. The measurement therefore uses the ray sum without
 # envelope and measures the width with the methods below.
 #

@@ -31,10 +31,6 @@ Derivation (calculation, checked against the spectral integrals):
 
 Run
     python3 kappa_geschlossen.py   (prints the kappas of the standard VIPA, alpha_s = 3)
-
-Used in the main document: sec. 8.2 (Die Kennzahlen aus dem Spektrum); appendix A.32 (R40: Geschlossene Kennzahlen
-aus RMS und Spektralexponent); appendix A.45 (R53: Der Streifenversatz in geschlossener Form mit zwei Konstanten).
-Pages: 70, 182, 215.
 """
 import numpy as np
 from scipy.special import hyp2f1
@@ -106,7 +102,7 @@ def kappas(R2, L_eff, theta_i_deg, chord, D_m, alpha_s, f_max=1 / 0.1e-3, h=H_PL
     ks = sorted(tab); a = float(np.clip(alpha_s, ks[0], ks[-1])); lo = max(k for k in ks if k <= a); hi = min(k for k in ks if k >= a)
     g0, p, q, s = (np.array(tab[lo]) if hi == lo else np.array(tab[lo]) + (a - lo) / (hi - lo) * (np.array(tab[hi]) - np.array(tab[lo])))
     kperp = g0 * (chord / D_m) * (1 + L_w / chord) ** -p * (1 + xi) ** -q * (1 + chord / D_m) ** s
-    # strip offset, form with two constants (calculation R53): F_mean = 1 - kappa_mean is the fraction of the variance
+    # strip offset, form with two constants: F_mean = 1 - kappa_mean is the fraction of the variance
     # in the window mean (closed form, 2F1); of it, the fraction [c/(c + l_perp)]^2 varies across the chord, with the
     # decorrelation length l_perp = (0.146 + 0.095 (alpha_s - 3)) D_m sqrt(1 + xi); exponent 2 = variance of a tilt across
     # the chord. Against the exact spectral integral: 8 % in the median (P90 22 %) at 697 grid points, without a trend in

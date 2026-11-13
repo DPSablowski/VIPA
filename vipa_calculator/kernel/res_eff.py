@@ -1,4 +1,4 @@
-"""Motional narrowing of the residual resonance (calculation R55 of the main document).
+"""Motional narrowing of the residual resonance.
 
 The resonance position nu_m (phase step per round trip, after removing mean and slope) broadens the line only as far
 as it acts as a fixed shift over the coherence length of the line, k* = W = 2/D round trips. For a frequency
@@ -64,7 +64,7 @@ class RestSpektrum:
 
 
 def kern_omega(om, D):
-    """Effective fraction of a step component of frequency omega in the static broadening (R55, alternative kernel):
+    """Effective fraction of a step component of frequency omega in the static broadening (alternative kernel):
     slow (omega << D) it acts as a scatter of the resonance position (loss sigma^2/(2 D^2) in F), fast as a phase
     modulation with side bands outside the line, whose energy p = sigma^2/(4 sin^2(omega/2)) forms a pedestal
     (loss (pi/2) p). Equating gives K = pi D^2/(4 sin^2(omega/2)); smooth form: K = 1/(1 + 4 sin^2(omega/2)/(pi D^2)).

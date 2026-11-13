@@ -42,14 +42,14 @@ GROUPS = [
         ("src_rect_pm", "Source rectangular (width)", "pm", "filter"),
         ("pixel_um", "Pixel size", "um", ""),
         ("f_cam_mm", "Camera focal length", "mm", "0 = no pixel"),
-        ("sigma_T_mK", "Temperature fluctuation", "mK", "between exposures"),
+        ("sigma_T_mK", "Temperature fluctuation (rms)", "mK", "standard deviation of the temperature between exposures"),
         ("cte_ppm", "CTE of the thickness", "1e-6/K", "glass or spacer"),
         ("dndT_ppm", "dn'/dT", "1e-6/K", ""),
     ]),
 ]
 
 HELP = """Calculation routes
-  Equation: closed-form equation of the main document (overlap measure Omega50). Net finesse of the median
+  Equation: closed-form equation (overlap measure Omega50). Net finesse of the median
             plate; fractions of a second.
   Theory:   exact line (round-trip pupil, incoherent across the chord) for surfaces drawn from the three-band model.
             'Single realisation' shows one device; 'Ensemble' gives the median over N devices with P10-P90 spread,
@@ -57,11 +57,11 @@ HELP = """Calculation routes
   Random seed: start value of the random-number generator that draws the surfaces. The same seed gives the same
             surfaces, so runs are reproducible and can be compared with each other.
 Measures
-  Omega50 (overlap) is the measure of the document; FWHM is the measure of LightMachinery/Hu; F_eq is the
-  equivalent width (energy measure, chapter 6).
+  Omega50 (overlap) is the measure of the closed-form equation and the theory; FWHM is the measure of LightMachinery/Hu; F_eq is the
+  equivalent width (energy measure).
 Best focus (tick box)
   The detector is moved behind the focal plane until the line is sharpest. Equation: wedge and mean random chirp
-  compensated (main document, best-focus equation). Theory: the defocus that maximises Omega50 is searched for every
+  compensated. Theory: the defocus that maximises Omega50 is searched for every
   device. With the camera focal length f the shift is dz = -2 f^2 c / (k0 v^2), v = dx' cos(Theta) the transverse
   spacing of the virtual sources (air: v = 2 h sin Theta); tab 'Focus' shows dz per device or the focus scan.
 Detector spectrum (tab 'Spectrum')
@@ -117,6 +117,9 @@ class Calculator(tk.Tk):
         self.bands = tk.StringVar(value="stationary")
         ttk.Radiobutton(fb, text="stationary (model field; grids, equation)", variable=self.bands, value="stationary").grid(row=0, column=0, sticky="w", padx=4)
         ttk.Radiobutton(fb, text="measured (Zernike fit = figure, residual = mid band)", variable=self.bands, value="measured").grid(row=1, column=0, sticky="w", padx=4)
+        self.two = tk.BooleanVar(value=False)
+        ttk.Checkbutton(fbands, text="HR and PR drawn separately (inputs per surface)", variable=self.two).grid(row=2, column=0, sticky="w", padx=4, pady=(4, 2))
+        ttk.Label(fbands, text="Off: one field = thickness variation of the gap (inputs refer to the gap).\nOn: two independent surfaces, each with the rms above;\nthe equation then uses sqrt(2) times the rms.", foreground="#555", justify="left").grid(row=3, column=0, sticky="w", padx=4)
         fmp = ttk.LabelFrame(T["surf"], text="Measured surface maps (plate maps)"); fmp.pack(fill="x", padx=6, pady=4)
         self.maps = {"map_hr": tk.StringVar(value=""), "map_pr": tk.StringVar(value="")}
         for i, (k, lab) in enumerate([("map_hr", "HR"), ("map_pr", "PR")]):
@@ -197,7 +200,7 @@ class Calculator(tk.Tk):
             s = v.get().strip().replace(",", ".")
             try: d[k] = float(s)
             except ValueError: raise ValueError(f"Input '{k}' is not a number: {v.get()!r}")
-        d["bands"] = self.bands.get()
+        d["bands"] = self.bands.get(); d["two_surfaces"] = bool(self.two.get())
         for k, v in self.maps.items(): d[k] = v.get().strip()
         return CC.Params(**d)
 
@@ -523,6 +526,8 @@ class Calculator(tk.Tk):
         for k, v in d.items():
             if k in self.vars: self.vars[k].set(_fmt(v))
             elif k in self.maps: self.maps[k].set(v)
+            elif k == 'two_surfaces': self.two.set(bool(v))
+            elif k == 'bands': self.bands.set(v)
         self.run_equation()
 
 

@@ -19,8 +19,6 @@ round-trip offset Delta_x, path step L_step, k0 = 2 pi / 630 nm, core image 75 u
 Environment variable VIPA_MEAN_VAR_LEGACY=1 selects the legacy normalization of the surface variance (see
 _calibrate_mean_var); default is the exact one.
 Library module, no main program; it imports zernike_hr_surface from the current directory.
-
-Used in the main document: appendix H.7 (Produktionsraster, gemeinsame Zufallszahlen und Nachrechnung). Pages: 353.
 """
 import numpy as np, sys
 sys.path.insert(0,'.')

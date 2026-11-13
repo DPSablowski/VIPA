@@ -24,8 +24,6 @@ missing points are computed. One row per grid point.
 
     python theorie_grid_dreiband.py --probe                                   # quick test (3 points, 3 surfaces)
     python theorie_grid_dreiband.py --n 800 --nsurf 50 --procs 60 --src_pm 0,2,4,6
-
-Used in the main document: sec. 4.2 (Das Werkzeug: wie die Theorie gerechnet wird). Pages: 38.
 """
 import os, sys, time, argparse
 os.environ.setdefault("OMP_NUM_THREADS", "1")

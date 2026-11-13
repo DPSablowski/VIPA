@@ -1,7 +1,7 @@
 """VIPA finesse calculator: computational core (no GUI), version 2026-10-18.
 
 Two routes for the same inputs:
-  equation(p)            closed-form equation of the main document (overlap measure Omega50): net finesse of the median plate
+  equation(p)            closed-form equation (overlap measure Omega50): net finesse of the median plate
   theory(p, n, seed)     exact line of the theory (round-trip pupil, incoherent across the chord) for n surfaces drawn from the
                          three-band surface model; n = 1: one realisation, n > 1: ensemble with median and spread
   length_series(p, Ls)   equation (and optionally theory) versus plate length
@@ -52,6 +52,7 @@ class Params:
     alpha_s: float = 3.0          # spectral exponent of the mid band
     bands: str = "stationary"     # convention of s_fig/s_mid: "stationary" (field as such; grids, equation) or "measured" (Zernike fit of
                                   # degrees 2-4 = figure, residual rms less fine band = mid band, as an interferometer delivers them)
+    two_surfaces: bool = False    # True: HR and PR are drawn as two independent surfaces (inputs are per surface); False: one field = thickness variation of the gap
     s_fine_nm: float = 0.0        # fine band (structures < 0.1 mm, uncorrelated from reflection to reflection)
     D_m_mm: float = 0.0           # diameter of the surface model (0: from L)
     map_hr: str = ""              # measured height map of the HR surface (plate map .vmap.npz from surface_map.py); adds to the model surface
@@ -73,9 +74,17 @@ class Params:
 FIELDS = [f.name for f in fields(Params)]
 
 
+def _gap(p: Params):
+    """Parameters of the single gap-thickness field equivalent to two independent surfaces: all rms values times sqrt(2)."""
+    if not p.two_surfaces: return p
+    import dataclasses
+    r = math.sqrt(2.0)
+    return dataclasses.replace(p, two_surfaces=False, s_fig_nm=p.s_fig_nm * r, s_mid_nm=p.s_mid_nm * r, s_fine_nm=p.s_fine_nm * r)
+
+
 def band_params(p: Params):
     """Return (sigma_fig, sigma_mid) [m] in the stationary convention. For p.bands == "measured" the Zernike-fit figure and
-    the residual mid band are converted with Noll's shares (flaeche_dreiband.measured_to_stationary; Part I, Sec. 3B):
+    the residual mid band are converted with Noll's shares (flaeche_dreiband.measured_to_stationary):
     sigma_mid^2 = s_mid^2/(1 - p - p_t), sigma_fig^2 = s_fig^2 - p sigma_mid^2."""
     sf, sm = p.s_fig_nm * 1e-9, p.s_mid_nm * 1e-9
     if p.bands == "measured" and sm > 0:
@@ -142,7 +151,7 @@ def orders(p: Params, max_orders=41, margin=0.95):
 def defocus_mm(p: Params, c, order=None):
     """Detector shift dz = z_F - f [mm] behind the focal plane that imprints the pupil phase c m^2:
     beta_def = k0 v^2 (1 - z_F/f) / (2 f) with the transverse spacing v = dx' cos(Theta_out) of the virtual sources
-    (air: v = 2 h sin(Theta), as in the main document). None if f_cam = 0."""
+    (air: v = 2 h sin(Theta)). None if f_cam = 0."""
     if p.f_cam_mm <= 0: return None
     o = order or orders(p)[0]; f = p.f_cam_mm * 1e-3; k0 = 2 * math.pi / (p.wl_nm * 1e-9)
     v = o["dx"] * math.cos(o["Theta_out"])
@@ -155,6 +164,7 @@ def equation(p: Params, with_details=True, order=None):
     compensated), plus the clean line, the validity check and the detector shift for best focus. order: entry of orders(p)
     (default: central order)."""
     import finesse_vipa as FV
+    p = _gap(p)
     a = equivalent(p); sq = a["src_scale"]
     o = order or orders(p)[0]
     arg = (a["R2eff"], a["L"], a["th_in_deg"] + math.degrees(o["thx"]), p.wedge_as, a["wl_eq"])
@@ -230,7 +240,7 @@ def _geometry(p: Params, thx=None):
     wl_eq_nm = a["wl_eq"] * 1e9; R2 = a["R2eff"]
     U, X, y, g, dx, chord = order_tracks(R2, p.L_mm, a["th_in_deg"], p.wedge_as, wl_eq_nm, p.beam_mm, thx, 61)
     D_m = p.D_m_mm * 1e-3 if p.D_m_mm > 0 else 2 * G.surface_radius(p.L_mm)
-    # weights for the mean random chirp of a plate (sweep of the strips, as in the best-focus grid of the document)
+    # weights for the mean random chirp of a plate (sweep of the strips)
     W = np.abs(U) ** 2; wm = W.sum(1); keep = wm > 0; w = wm[keep] / wm[keep].sum(); wy = W[keep].sum(0) / W[keep].sum()
     m = np.arange(keep.sum(), dtype=float); t = m - np.sum(w * m); r = w * t / np.sum(w * t ** 2)
     beta = 2 * (2 * math.pi / a["wl_eq"]) * math.radians(p.wedge_as / 3600) * a["h"] * math.sin(math.radians(a["th_in_deg"]))
@@ -324,6 +334,10 @@ def line_for_surface(p: Params, j: int, seed: int = 1, thx=None, best_focus=Fals
     has_model = (p.s_fig_nm > 0 or p.s_mid_nm > 0 or p.s_fine_nm > 0)
     F = Fl(rng, D_m, p.s_fig_nm * 1e-9, p.s_mid_nm * 1e-9, p.alpha_s, p.s_fine_nm * 1e-9, 2 * D_m + 2e-3, 2 * D_m, project_figure=(p.bands == "measured"))
     hh = F.h(X, Y) if has_model else np.zeros(X.shape)
+    if p.two_surfaces and has_model:      # PR: second independent field with the same band parameters, hit points shifted by dx/2
+        rng2 = np.random.default_rng(np.random.SeedSequence([int(seed), 1, int(j)]))
+        F2 = Fl(rng2, D_m, p.s_fig_nm * 1e-9, p.s_mid_nm * 1e-9, p.alpha_s, p.s_fine_nm * 1e-9, 2 * D_m + 2e-3, 2 * D_m, project_figure=(p.bands == "measured"))
+        hh = hh + F2.h(X + geo["dx"] / 2, Y)
     if p.map_hr or p.map_pr:
         import surface_map as SM
         if p.map_hr: hh = hh + SM.load_plate_map(p.map_hr).h(X, Y)
@@ -507,6 +521,7 @@ def static_model(p: Params, NG=2 ** 16):
     """Comparison model like the LightMachinery calculator (reproduced from its outputs on 2026-10-18): Hu sum with
     N = length / round-trip offset reflections, numerically convolved with a static Gaussian thickness distribution (RMS of all
     surface bands together, phase 2 k0 n' sigma), measure FWHM. Knows neither walk-off nor spatial frequencies."""
+    p = _gap(p)
     a = equivalent(p); r = math.sqrt(a["R2eff"]); N = max(int(a["L"] / a["dx"]) + 1, 1)
     d = np.linspace(-np.pi, np.pi, NG, endpoint=False); x = r ** N
     I = (1 - 2 * x * np.cos(N * d) + x * x) / (1 - 2 * r * np.cos(d) + r * r)

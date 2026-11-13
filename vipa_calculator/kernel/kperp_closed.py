@@ -20,10 +20,6 @@ Inputs / outputs
 
 Usage
     import kperp_closed as KP; KP.kappa_perp_closed(alpha_s, L_w, c, D_m)
-
-Used in the main document: appendix A.45 (R53: Der Streifenversatz in geschlossener Form mit zwei Konstanten);
-appendix A.52 (R60: Der Streifenversatz des Mittelbands als Doppelfilter – geschlossen ohne Dekorrelationslänge).
-Pages: 215, 238, 239, 240.
 """
 import numpy as np
 # Mean correction for the error of the rational approximation of sinc^2

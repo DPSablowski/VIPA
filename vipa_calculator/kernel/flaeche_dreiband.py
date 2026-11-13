@@ -17,7 +17,7 @@ Two conventions for the mid band (module switch MID_PROJECTED, or the argument p
   False (grids up to 22-10-2026): the mid band is the stationary power-law field as such. Its low-frequency end then
         carries variance in the Zernike terms of degrees 0-4 (about 46 % for alpha_s = 3 on D_m), which a Zernike fit of
         a measured map books as figure; extracting the parameters from a map therefore needs the projection correction
-        of Part I, Sec. 3B (Noll's integral).
+        (Noll's integral).
   True  (procedure-based definition): the Zernike terms of degrees 0-4 (piston, tilt, figure) are fitted on the disk
         D_m and removed from the mid band, which is then scaled to RMS sigma_mid over the disk. Figure and mid band are
         then exactly what a least-squares Zernike fit of a height map returns (figure = fit of degrees 2-4, mid band =
@@ -27,10 +27,6 @@ Units: metres. Seeds from (seed, pidx, surface index): equal seeds give equal su
 
 Contents: class Flaeche (full box), noll_share and measured_to_stationary (conversion between the two conventions), psd_mid (normalized mid-band PSD for the spectral integrals of the characteristic
 quantities), class FlaecheStreifen (memory-saving variant for long plates). Library module, no main program.
-
-Used in the main document: sec. 3.6.3 (Wie eine Politur aussieht: das Dreiband-Modell); sec. 4.2 (Das Werkzeug: wie
-die Theorie gerechnet wird); appendix A.32 (R40: Geschlossene Kennzahlen aus RMS und Spektralexponent). Pages: 28,
-38, 185.
 """
 import numpy as np
 from zernike_hr_surface import zernike
@@ -117,7 +113,7 @@ def measured_to_stationary(sigma_fig_fit, sigma_mid_res, alpha_s, D_m, f_max=FMA
     2-4, sigma_mid_res = rms of the residual less the fine band, i.e. the parameters of the projected generator,
     MID_PROJECTED = True) into the parameters of the stationary convention used by the closed-form equation and by
     the grids (MID_PROJECTED = False): sigma_mid^2 = sigma_mid_res^2/(1 - p - p_t), sigma_fig^2 = sigma_fig_fit^2 -
-    p sigma_mid^2 (Part I, Sec. 3B, Eq. 11). Returns (sigma_fig, sigma_mid)."""
+    p sigma_mid^2. Returns (sigma_fig, sigma_mid)."""
     p = noll_share(alpha_s, D_m, f_max, (2, 3, 4)); pt = noll_share(alpha_s, D_m, f_max, (1,))
     sm2 = sigma_mid_res ** 2 / (1 - p - pt); sf2 = max(sigma_fig_fit ** 2 - p * sm2, 0.0)
     return np.sqrt(sf2), np.sqrt(sm2)

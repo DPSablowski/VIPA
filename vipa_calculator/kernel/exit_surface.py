@@ -1,4 +1,4 @@
-"""Exit surface of the partially reflecting (PR) plate (calculation R48 of the main document).
+"""Exit surface of the partially reflecting (PR) plate.
 
 Purpose
     The phase (n-1) k0 h_E(x_m) of the exit surface acts once on each contribution and does not accumulate over
@@ -18,8 +18,6 @@ Functions
 
 Inputs/outputs
     library module (no files, no printout); imported by finesse_vipa.py and others.
-
-Used in the main document: appendix A.40 (R48: Die Austrittsfläche im Überlappungsmaß). Pages: 202.
 """
 import sys, os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import numpy as np
 from dof_perp import _geom
@@ -34,7 +32,7 @@ def exit_kz(R2, L_mm, th_deg, alpha_as, wl_nm, bl_mm, D_m, n, sig_fig, sig_mid, 
     alpha_s spectral exponent, D_line line width for the high-pass of the halo (None = no filter).
     Returns a dict: rest (weighted residual phase variance outside the line, rad^2), var_chirp (variance of the
     chirp beta_E), C (strip covariance from the linear part), wy (strip weights), Cm (covariance of the residual
-    along the round trips, averaged over the strips, for the Kubo line of R48 step 9), w (round-trip weights).
+    along the round trips, averaged over the strips, for the Kubo line), w (round-trip weights).
     """
     w, wy, X, Y, dx = _geom(R2, L_mm, th_deg, alpha_as, wl_nm, bl_mm)
     # phase per height: (n-1) k0; m centred on the weighted mean round trip
@@ -46,7 +44,7 @@ def exit_kz(R2, L_mm, th_deg, alpha_as, wl_nm, bl_mm, D_m, n, sig_fig, sig_mid, 
     H = B @ L
     # hits on the exit surface lie half a step further than on the mirror
     XP = X + dx/2; x0 = XP[0]; y0 = Y[0]; mrow = (XP - x0[None, :])[:, 0]; ns = len(wy)
-    # Cm: covariance of the residual along the round trips (averaged over the strips), for the Kubo line (R48 step 9)
+    # Cm: covariance of the residual along the round trips (averaged over the strips), for the Kubo line
     out = dict(rest=0.0, var_chirp=0.0, C=np.zeros((ns, ns)), wy=wy, Cm=np.zeros((M, M)), w=Wd)
     # halo part: only residual components with a frequency (in the round-trip number) above the line width end up
     # outside the line; hp is the high-pass weight om^2/(om^2 + D_line^2)
@@ -152,7 +150,7 @@ def kubo_rest_width(Cm, w, NFFT=None):
 
     Cm is the covariance of the residual phase along the round trips; the Kubo form is exact for Gaussian phase.
     Returns (D_rest, D_0): the Omega50 width with the residual and that of the clean window line (both in rad).
-    This replaces the pedestal of the exit residual (R48 step 9).
+    This replaces the pedestal of the exit residual.
     """
     from scipy.optimize import brentq
     # coherence matrix G_mn = sqrt(w_m w_n) exp(-Var(phi_m - phi_n)/2); G0 without residual phase

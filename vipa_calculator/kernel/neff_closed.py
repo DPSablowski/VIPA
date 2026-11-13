@@ -1,8 +1,7 @@
-"""Strip coherence n_eff in closed form (calculation R54 of the main document).
+"""Strip coherence n_eff in closed form.
 
 Library module (no command-line use, no files). n_eff_closed(...) returns (n_eff, mu, D_psi(c)); the other functions
 are its building blocks. Lengths in m, wl in m.
-Used in the main document: appendix A.46 (R54: Die Streifenkohärenz in geschlossener Form). Pages: 219.
 
 Structure function of the height (isotropic power law f^-alpha, variance 1, lower limit 1/D_m, r << D_m):
     D_h(r) = C_a (r/D_m)^nu,  nu = alpha-2,  C_a = 2 (alpha-2) (2 pi)^(alpha-2) I(alpha),  I(alpha) = 2^(-2H-1) Gamma(1-H)/(H Gamma(1+H)), H = nu/2
@@ -45,9 +44,9 @@ def n_eff_closed(k,dx,D_m,alpha,sig_mid,sig_fein,c,wl,f_max=F_MAX_LOG,D_fig_c=0.
     """n_eff = 1/A^2 in closed form. Chord mean with a local power law D_psi ~ 2 (u/ell)^mu whose exponent is evaluated at
     the coherence length ell (D_psi(ell) = 2): start value mu from u = c/2 .. c, then one step at ell (explicit, no
     iteration to convergence). Against the quadrature of the chord integral: median 1.01, P90 1.08 for
-    alpha_s = 2 ... 3.5 (R54, step 3). Returns (n_eff, mu, D_psi(c)); (1, 2, 0) if there is no phase disturbance."""
+    alpha_s = 2 ... 3.5 (step 3). Returns (n_eff, mu, D_psi(c)); (1, 2, 0) if there is no phase disturbance."""
     k0=2*np.pi/wl; phi2=(2*k0*sig_mid)**2
-    # D_fig_c (R63): structure function of the figure at the chord. Across the dispersion the figure is mainly a tilt; two strips at
+    # D_fig_c: structure function of the figure at the chord. Across the dispersion the figure is mainly a tilt; two strips at
     # distance u are shifted against each other after k round trips by k sqrt(12) sigma_perp,fig u/c: D_psi,fig(u) = D_fig_c (u/c)^2,
     # D_fig_c = 12 k^2 sigma_perp,fig^2. Alone it gives A^2 = sqrt(pi/a) erf(sqrt a) - (1 - e^-a)/a with a = D_fig_c/2 (same expression, mu = 2).
     D=lambda u: (D_psi(u,k,dx,D_m,alpha,phi2,f_max) if phi2>0 else 0.0)+D_fig_c*(u/c)**2
