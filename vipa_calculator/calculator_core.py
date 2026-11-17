@@ -316,8 +316,8 @@ def _clean(p, thx, best_focus):
     I0_raw = intensity(geo["U"], geo["g"], MS.NF, "integrated"); I0 = _convolve(I0_raw, *_conv_widths(p, a))
     out = dict(I0=I0, F=measures(I0), F_raw=measures(I0_raw))
     if best_focus:
-        cb, Ib, _ = _best_focus(p, geo, geo["U"], -geo["beta"], max(abs(geo["beta"]) * 0.5, _scale(geo, out["F"][0])))
-        out.update(c_best=cb, F_best=measures(Ib))
+        cb, Ib, curve = _best_focus(p, geo, geo["U"], -geo["beta"], max(abs(geo["beta"]) * 0.5, _scale(geo, out["F"][0])), scan=True)
+        out.update(c_best=cb, F_best=measures(Ib), I_best=Ib, scan=curve)
     return out
 
 
@@ -435,6 +435,8 @@ def theory(p: Params, n: int = 1, seed: int = 1, processes: int = 1, n_lines: in
     R0 = res[0]; e0 = out_orders[0]; nn = e0["n"]
     I_mean = R0["I_sum"] / max(nn, 1) if R0["I_sum"] is not None else None
     scan = None
+    if not R0["scan"] and best_focus and nn == 0:          # no surface: focus scan of the clean line (wedge only)
+        R0 = dict(R0, scan=R0["clean"].get("scan"))
     if R0["scan"] and p.f_cam_mm > 0:
         scan = [(defocus_mm(p, c, ords[0]), F) for c, F in R0["scan"]]
     elif R0["scan"]:
@@ -445,6 +447,7 @@ def theory(p: Params, n: int = 1, seed: int = 1, processes: int = 1, n_lines: in
                 F_clean=e0["F_clean"], F_clean_no_source=e0["F_clean_no_source"], om50=e0["om50"], fwhm=e0["fwhm"], eq=e0["eq"],
                 per_surface=e0["per_surface"], I0=R0["clean"]["I0"], lines=[I for _, I in sorted(R0["lines"], key=lambda t: t[0])],
                 lines_best=[I for _, I in sorted(R0["lines_best"], key=lambda t: t[0])], I_mean=I_mean,
+                I0_best=(R0["clean"].get("I_best") if best_focus else None),
                 F_mean_line=(measures(I_mean) if I_mean is not None else None), focus_scan=scan, focus_scan_in_mm=p.f_cam_mm > 0,
                 dlam_pm=dpm, order=MS.ORD, time_s=time.time() - t0, has_surface=has_surface)
 

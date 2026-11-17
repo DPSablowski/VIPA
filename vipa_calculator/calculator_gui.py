@@ -362,6 +362,9 @@ class Calculator(tk.Tk):
         for i, I in enumerate(t["lines"]):
             y = np.asarray(I)[o] / nrm; curves.append(y)
             ax.plot(x, y, lw=0.9, alpha=0.45 if t["n"] > 1 else 0.9, label=f"surface {i+1}")
+        if t.get("I0_best") is not None and t["n"] == 0:
+            y = np.asarray(t["I0_best"])[o] / nrm; curves.append(y)
+            ax.plot(x, y, color="#e08e2b", lw=1.3, ls="--", label="clean line, best focus")
         for i, I in enumerate(t["lines_best"]):
             y = np.asarray(I)[o] / nrm; curves.append(y)
             ax.plot(x, y, lw=1.1, ls="--", alpha=0.6 if t["n"] > 1 else 1.0, label=f"surface {i+1}, best focus")
@@ -435,7 +438,8 @@ class Calculator(tk.Tk):
         elif t["focus_scan"]:
             xs, Fs = zip(*t["focus_scan"]); ax.plot(xs, Fs, "o-", color="#2c5aa0", ms=3)
             ax.set_xlabel("Detector shift dz [mm]" if t["focus_scan_in_mm"] else "Defocus phase c [rad] (enter camera focal length for mm)")
-            ax.set_ylabel("Finesse (Omega50)"); ax.grid(alpha=0.3); ax.set_title("Focus scan of this surface (central order)")
+            ax.set_ylabel("Finesse (Omega50)"); ax.grid(alpha=0.3)
+            ax.set_title("Focus scan of the clean line (central order)" if t["n"] == 0 else "Focus scan of this surface (central order)")
         fig.tight_layout(); can.draw()
 
     def _show_orders(self):
